@@ -13,15 +13,29 @@ export const LoginModal = ({ open, onClose }) => {
     const handalGoogleAuth = async () => {
         try {
             const result = await signInWithPopup(auth, provider);
-            console.log(result);
-            const { data } = axios.post(`${import.meta.env.VITE_SERVER_URL}/api/auth/google`, {
-                name: result.user.displayName,
-                email: result.user.email,
-                avatar: result.user.photoURL
-            }, { withCredentials: true });
-            dispatch(setUserData(data));
+            console.log("Firebase Auth Result:", result);
+
+            //  Added 'await' so your app waits for your backend server response
+            const response = await axios.post(
+                `${import.meta.env.VITE_SERVER_URL}/api/auth/google`,
+                {
+                    name: result.user.displayName,
+                    email: result.user.email,
+                    avatar: result.user.photoURL
+                },
+                { withCredentials: true }
+            );
+
+            console.log("Backend Server Response Data:", response.data);
+
+            // Dispatch the actual backend data payload to Redux
+            if (response.data) {
+                dispatch(setUserData(response.data));
+                setOpenLogin(false); // Close the modal on success!
+            }
+
         } catch (error) {
-            console.log(error);
+            console.error("Google Auth Error:", error);
         }
     }
 
