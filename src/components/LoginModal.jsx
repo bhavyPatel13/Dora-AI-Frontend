@@ -13,7 +13,7 @@ export const LoginModal = ({ open, onClose }) => {
     const handalGoogleAuth = async () => {
         try {
             const result = await signInWithPopup(auth, provider);
-            console.log("Firebase Auth Result:", result);
+            // console.log("Firebase Auth Result:", result);
 
             //  Added 'await' so your app waits for your backend server response
             const response = await axios.post(
