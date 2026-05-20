@@ -2,7 +2,7 @@ import axios from 'axios';
 import { ArrowLeft } from 'lucide-react';
 import { motion } from 'motion/react';
 import React, { useEffect, useState } from 'react';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate, useRouteLoaderData } from 'react-router-dom';
 import { setUserData } from '../redux/userSlice';
 
@@ -17,6 +17,7 @@ const PHASES = [
 export const Generate = () => {
     const navigate = useNavigate();
     const dispatch = useDispatch();
+    const { userData } = useSelector(state => state.user);
 
     const [prompt, setPrompt] = useState("");
     const [loading, setLoading] = useState(false);
@@ -31,10 +32,11 @@ export const Generate = () => {
                 withCredentials: true
             });
             setProgress(100);
-            dispatch(setUserData({ ...useRouteLoaderData, credits: res.data.remainingCredits }));
+            console.log(res);
+            dispatch(setUserData({ ...userData, credits: res.data.remainingCredits }));
             navigate(`/editor/${res.data.websiteId}`)
         } catch (error) {
-            setError(error.responce.data.message || "Something went wrong");
+            setError(error.responce?.data?.message || "Something went wrong");
         } finally {
             setLoading(false);
         }
@@ -60,7 +62,7 @@ export const Generate = () => {
 
             phase = Math.floor((value / 100) * PHASES.length);
 
-            setProgress(value);
+            setProgress(Math.floor(value));
             setPhaseIndex(phase);
         }, 1200);
 
@@ -114,9 +116,14 @@ export const Generate = () => {
                     <h1 className='text-xl font-semibold mb-2'>Describe Your Website</h1>
                     <div className='relative'>
                         <textarea
+                            value={prompt}
+                            onChange={(event) => setPrompt(event.target.value)}
                             className='w-full h-56 p-6 rounded-3xl bg-black/60 border border-white/10 outline-none resize-none text-sm leading-relaxed focus:ring-2 focus:ring-white/20'
                             placeholder='Describe Your Website in detail...' />
                     </div>
+                    {error && (
+                        <p className='mt-4 text-sm text-red-400'>{error}</p>
+                    )}
                 </div>
                 <div className='flex justify-center'>
                     <motion.button
@@ -136,7 +143,7 @@ export const Generate = () => {
                             className='max-w-xl mx-auto mt-12'>
                             <div className='flex justify-between mb-2 text-xs text-zinc-400'>
                                 <span>{PHASES[phaseIndex]}</span>
-                                <span>{progress}</span>
+                                <span>{progress}%</span>
                             </div>
                             <div className='h-2 w-full bg-white/10 rounded-full overflow-hidden'>
                                 <motion.div
